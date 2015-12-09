@@ -99,6 +99,7 @@ type Driver struct {
 // - region
 // - bucket
 // - encrypt
+// - endpoint
 func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 	// Providing no values for these is valid in case the user is authenticating
 	// with an IAM on an ec2 instance (in which case the instance credentials will
@@ -112,14 +113,44 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 		secretKey = ""
 	}
 
-	regionName, ok := parameters["region"]
-	if !ok || fmt.Sprint(regionName) == "" {
-		return nil, fmt.Errorf("No region parameter provided")
+	endpoint, ok := parameters["endpoint"]
+	if !ok || fmt.Sprint(endpoint) == "" {
+		// do normal region detection
+		regionName, ok := parameters["region"]
+		if !ok || fmt.Sprint(regionName) == "" {
+			return nil, fmt.Errorf("No region parameter provided")
+		}
+		region := aws.GetRegion(fmt.Sprint(regionName))
+		if region.Name == "" {
+			return nil, fmt.Errorf("Invalid region provided: %v", region)
+		}
+	} else {
+		// all we really need here is the S3Endpoint which is option 3 and the 2 bools (S3LocationConstraint and S3LowercaseBucket)
+		region := aws.Region{
+			"custom-region",
+			aws.ServiceInfo("",0),
+			endpoint,
+			"",
+			false,
+			false,
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			aws.ServiceInfo("",0),
+			"",
+			aws.ServiceInfo("",0),
+			"",
+			"",
+			"",
+			"",
+		}
 	}
-	region := aws.GetRegion(fmt.Sprint(regionName))
-	if region.Name == "" {
-		return nil, fmt.Errorf("Invalid region provided: %v", region)
-	}
+
 
 	bucket, ok := parameters["bucket"]
 	if !ok || fmt.Sprint(bucket) == "" {
