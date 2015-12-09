@@ -113,6 +113,7 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 		secretKey = ""
 	}
 
+	var region aws.Region
 	endpoint, ok := parameters["endpoint"]
 	if !ok || fmt.Sprint(endpoint) == "" {
 		// do normal region detection
@@ -120,16 +121,16 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 		if !ok || fmt.Sprint(regionName) == "" {
 			return nil, fmt.Errorf("No region parameter provided")
 		}
-		region := aws.GetRegion(fmt.Sprint(regionName))
+		region = aws.GetRegion(fmt.Sprint(regionName))
 		if region.Name == "" {
 			return nil, fmt.Errorf("Invalid region provided: %v", region)
 		}
 	} else {
 		// all we really need here is the S3Endpoint which is option 3 and the 2 bools (S3LocationConstraint and S3LowercaseBucket)
-		region := aws.Region{
+		region = aws.Region{
 			"custom-region",
-			aws.ServiceInfo("",0),
-			endpoint,
+			aws.ServiceInfo{"",0},
+			endpoint.(string),
 			"",
 			false,
 			false,
@@ -141,9 +142,9 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 			"",
 			"",
 			"",
-			aws.ServiceInfo("",0),
+			aws.ServiceInfo{"",0},
 			"",
-			aws.ServiceInfo("",0),
+			aws.ServiceInfo{"",0},
 			"",
 			"",
 			"",
