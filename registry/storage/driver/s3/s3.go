@@ -667,7 +667,7 @@ func (d *driver) WriteStream(ctx context.Context, path string, offset int64, rea
 // Stat retrieves the FileInfo for the given path, including the current size
 // in bytes and the creation time.
 func (d *driver) Stat(ctx context.Context, path string) (storagedriver.FileInfo, error) {
-	listResponse, err := d.Bucket.List(d.s3Path(path), "", "", 1)
+	listResponse, err := d.Bucket.List(d.s3Path(path), "/", "", 1)
 	if err != nil {
 		return nil, err
 	}
@@ -766,7 +766,7 @@ func (d *driver) Move(ctx context.Context, sourcePath string, destPath string) e
 
 // Delete recursively deletes all objects stored at "path" and its subpaths.
 func (d *driver) Delete(ctx context.Context, path string) error {
-	listResponse, err := d.Bucket.List(d.s3Path(path), "", "", listMax)
+	listResponse, err := d.Bucket.List(d.s3Path(path), "/", "", listMax)
 	if err != nil || len(listResponse.Contents) == 0 {
 		return storagedriver.PathNotFoundError{Path: path}
 	}
@@ -783,7 +783,7 @@ func (d *driver) Delete(ctx context.Context, path string) error {
 			return nil
 		}
 
-		listResponse, err = d.Bucket.List(d.s3Path(path), "", "", listMax)
+		listResponse, err = d.Bucket.List(d.s3Path(path), "/", "", listMax)
 		if err != nil {
 			return err
 		}
